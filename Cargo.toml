@@ -1,0 +1,11 @@
+[package]
+name = "ptv"
+version = "0.1.0"
+authors = ["James Lee <jbit@jbit.net>"]
+edition = "2021"
+license = "BSD-2-Clause"
+
+[badges]
+maintenance = { status = "experimental" }
+
+[dependencies]
