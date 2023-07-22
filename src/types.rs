@@ -1,11 +1,12 @@
 use super::*;
+use std::str::FromStr;
 
 // Generate new-types for various Ids, allows more type safety
 macro_rules! id_type {
     ($(#[$meta:meta])* $idname:ident($idtype:ty)) => {
         $(#[$meta])*
         ///
-        /// Swagger type: `int32`
+        /// This is a new-type wrapper, use `new()` to create it.
         #[derive(Clone, Debug, PartialOrd, Ord, PartialEq, Eq, Hash, Deserialize, Serialize)]
         pub struct $idname($idtype);
         impl $idname {
@@ -37,38 +38,57 @@ macro_rules! id_type {
                 write!(f, "{}:{}/{}", stringify!($helpername), self.route_type, self.id)
             }
         }
+        impl FromStr for $helpername {
+            type Err = Error;
+            fn from_str(s: &str) -> Result<Self> {
+                let Some((prefix, other)) = s.split_once(':') else {
+                    return Err(Error::Other(format!("'{s}' missing ':'")));
+                };
+                let Some((route_type, id)) = other.split_once('/') else {
+                    return Err(Error::Other(format!("'{s}' missing '/'")));
+                };
+                if prefix != stringify!($helpername) {
+                    return Err(Error::Other(format!("'{s}' is not a {}", stringify!($helpername))));
+                }
+                Ok(Self {
+                    route_type: route_type.parse()?,
+                    id: $idname(id.parse()?),
+                })
+            }
+        }
     };
 }
+
 id_type!(
-    /** Stop Identifier */
+    /// Stop Identifier
     StopId(i32),
-    /** Stop Identifier with associated transport mode */
+    /// Stop Identifier with associated transport mode
     Stop
 );
 id_type!(
-    /** Route Identifier */
+    /// Route Identifier
     RouteId(i32),
-    /** Route Identifier with associated transport mode */
+    /// Route Identifier with associated transport mode
     Route
 );
 id_type!(
-    /** Run Identifier */
+    /// Run Identifier
     RunId(i32)
 );
 id_type!(
-    /** Run Reference */
+    /// Run Reference
     RunRef(String),
-    /** Run Reference with associated transport mode */
+    /// Run Reference with associated transport mode
     Run
 );
 id_type!(
-    /** Direction Identifier */
+    /// Direction Identifier
     DirectionId(i32),
-    /** Direction Identifier with associated transport mode */
+    /// Direction Identifier with associated transport mode
     Direction
 );
 id_type!(
-    /** Disruption Identifier */
+    /// Disruption Identifier
     DisruptionId(i32)
 );
 
@@ -99,8 +119,21 @@ impl std::fmt::Display for RouteType {
             Self::TRAM => write!(f, "Tram"),
             Self::BUS => write!(f, "Bus"),
             Self::VLINE => write!(f, "Vline"),
-            Self::NIGHT_BUS => write!(f, "Night Bus"),
+            Self::NIGHT_BUS => write!(f, "NightBus"),
             Self(unknown) => write!(f, "Unknown({unknown})"),
+        }
+    }
+}
+impl FromStr for RouteType {
+    type Err = Error;
+    fn from_str(s: &str) -> Result<Self> {
+        match s.to_lowercase().as_str() {
+            "train" => Ok(Self::TRAIN),
+            "tram" => Ok(Self::TRAM),
+            "bus" => Ok(Self::BUS),
+            "vline" => Ok(Self::VLINE),
+            "nightbus" => Ok(Self::NIGHT_BUS),
+            _ => Err(Error::Other(format!("Unknown route type {s}"))),
         }
     }
 }

@@ -67,7 +67,7 @@ impl<HTTPClient: PTVHttpClient> PTV<HTTPClient> {
     /// Swagger operation: `Departures_GetForStop`
     pub async fn departures(
         &self,
-        stop: Stop,
+        stop: &Stop,
         params: DeparturesParams,
     ) -> Result<DeparturesResponse> {
         let path = format!(

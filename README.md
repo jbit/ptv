@@ -48,9 +48,9 @@ PTV_DEVID=0 PTV_KEY=00000000-0000-0000-0000-000000000000 cargo run --example dep
 Example output:
 ```text
 Multiple stops found for: Flinders Street Station
-  Stop:Train/1071 Flinders Street Station
-  Stop:Vline/1071 Flinders Street Railway Station 
-  Stop:Tram/2722 Flinders Street Railway Station/Elizabeth St #1 
+    Stop:Train/1071 Flinders Street Station
+    Stop:Vline/1071 Flinders Street Railway Station 
+    Stop:Tram/2722 Flinders Street Railway Station/Elizabeth St #1 
 Departures for: Stop:Train/1071 Flinders Street Station
 Route: Alamein
 Route: Belgrave

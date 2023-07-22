@@ -1,7 +1,10 @@
-use ptv::{DeparturesParams, ResponseExpand, SearchParams, PTV};
+use ptv::{DeparturesParams, ResponseExpand, SearchParams, Stop};
 use std::cmp::Reverse;
 use std::iter::zip;
+use std::str::FromStr;
 use time::OffsetDateTime;
+
+type PTV = ptv::PTV<::reqwest::Client>;
 
 fn similar(left: &str, right: &str) -> usize {
     let matching = zip(left.chars(), right.chars())
@@ -14,20 +17,7 @@ fn similar(left: &str, right: &str) -> usize {
     }
 }
 
-#[tokio::main(flavor = "current_thread")]
-async fn main() {
-    // Get the developer ID and Key from environment variables
-    let devid = std::env::var("PTV_DEVID").expect("PTV_DEVID not set");
-    let key = std::env::var("PTV_KEY").expect("PTV_KEY not set");
-    let args: Vec<_> = std::env::args().collect();
-    let search = args
-        .get(1)
-        .cloned()
-        .unwrap_or_else(|| "Flinders Street Station".to_string());
-
-    // Create the API client instance
-    let ptv = PTV::new(devid, key.to_string(), "RustPTVExample/0.1");
-
+async fn search_for_stop(ptv: &PTV, search: &str) -> Stop {
     let params = SearchParams {
         include_outlets: Some(false),
         match_stop_by_suburb: Some(false),
@@ -47,16 +37,36 @@ async fn main() {
     if search_results.stops.len() > 1 {
         println!("Multiple stops found for: {search}");
         for stop in &search_results.stops {
-            println!("  {} {}", stop.stop(), stop.stop_name);
+            println!("    {} {}", stop.stop(), stop.stop_name);
         }
     }
 
-    let stop = search_results
+    search_results
         .stops
         .first()
-        .expect("Station search returned nothing");
+        .expect("Station search returned nothing")
+        .stop()
+}
 
-    println!("Departures for: {} {}", stop.stop(), stop.stop_name);
+#[tokio::main(flavor = "current_thread")]
+async fn main() {
+    // Get the developer ID and Key from environment variables
+    let devid = std::env::var("PTV_DEVID").expect("PTV_DEVID not set");
+    let key = std::env::var("PTV_KEY").expect("PTV_KEY not set");
+    let args: Vec<_> = std::env::args().collect();
+    let search = args
+        .get(1)
+        .cloned()
+        .unwrap_or_else(|| "Flinders Street Station".to_string());
+
+    // Create the API client instance
+    let ptv = PTV::new(devid, key.to_string(), "RustPTVExample/0.1");
+
+    let stop = if let Ok(stop) = Stop::from_str(&search) {
+        stop
+    } else {
+        search_for_stop(&ptv, &search).await
+    };
 
     // Setup parameters for our departures query
     // We ask for five results per route, and extra details for related routes, runs, and vehicles
@@ -64,6 +74,7 @@ async fn main() {
         expand: Some(vec![
             ResponseExpand::Route,
             ResponseExpand::Run,
+            ResponseExpand::Stop,
             ResponseExpand::VehicleDescriptor,
         ]),
         max_results: Some(5),
@@ -72,9 +83,16 @@ async fn main() {
 
     // Get departures from the API
     let result = ptv
-        .departures(stop.stop(), params)
+        .departures(&stop, params)
         .await
         .expect("Failed to get departures");
+
+    let stop_details = result.stops.get(&stop.id);
+    let stop_name = stop_details
+        .map(|s| s.stop_name.as_str())
+        .unwrap_or("Unknown");
+
+    println!("Departures for: {stop} {stop_name}");
 
     // Display the output:
     let now = OffsetDateTime::now_utc();

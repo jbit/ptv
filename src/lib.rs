@@ -23,7 +23,9 @@ use serde::de::DeserializeOwned;
 use serde::{Deserialize, Serialize};
 use sha1::Sha1;
 use std::collections::BTreeMap;
+use std::convert::Infallible;
 use std::future::Future;
+use std::num::ParseIntError;
 use std::pin::Pin;
 use time::OffsetDateTime;
 use url::Url;
@@ -51,6 +53,16 @@ pub enum Error {
 impl From<serde_json::Error> for Error {
     fn from(error: serde_json::Error) -> Self {
         Error::JsonParseError(error.to_string())
+    }
+}
+impl From<ParseIntError> for Error {
+    fn from(error: ParseIntError) -> Self {
+        Error::Other(error.to_string())
+    }
+}
+impl From<Infallible> for Error {
+    fn from(_: Infallible) -> Self {
+        unreachable!()
     }
 }
 impl std::error::Error for Error {}

@@ -1,6 +1,7 @@
 use super::*;
 use std::collections::HashMap;
 use std::future::ready;
+use std::str::FromStr;
 
 const FLINDERS: Stop = Stop {
     route_type: RouteType::TRAIN,
@@ -99,7 +100,7 @@ async fn test_train() {
     let data = std::fs::read_to_string("testdata/departures_0_1181.json").unwrap();
     let ptv = PTV::mock(HashMap::from([("*".to_string(), Ok(data))]));
     let result = ptv
-        .departures(FLINDERS, Default::default())
+        .departures(&FLINDERS, Default::default())
         .await
         .expect("Parsing failed");
     eprintln!("{:#?}", result);
@@ -111,7 +112,7 @@ async fn test_tram() {
     let data = std::fs::read_to_string("testdata/departures_1_2479.json").unwrap();
     let ptv = PTV::mock(HashMap::from([("*".to_string(), Ok(data))]));
     let result = ptv
-        .departures(FLINDERS, Default::default())
+        .departures(&FLINDERS, Default::default())
         .await
         .expect("Parsing failed");
     eprintln!("{:#?}", result);
@@ -123,7 +124,7 @@ async fn test_bus() {
     let data = std::fs::read_to_string("testdata/departures_2_17805.json").unwrap();
     let ptv = PTV::mock(HashMap::from([("*".to_string(), Ok(data))]));
     let result = ptv
-        .departures(FLINDERS, Default::default())
+        .departures(&FLINDERS, Default::default())
         .await
         .expect("Parsing failed");
     eprintln!("{:#?}", result);
@@ -135,8 +136,58 @@ async fn test_vline() {
     let data = std::fs::read_to_string("testdata/departures_3_1181.json").unwrap();
     let ptv = PTV::mock(HashMap::from([("*".to_string(), Ok(data))]));
     let result = ptv
-        .departures(FLINDERS, Default::default())
+        .departures(&FLINDERS, Default::default())
         .await
         .expect("Parsing failed");
     eprintln!("{:#?}", result);
+}
+
+#[test]
+fn test_parsing_stops() {
+    let tests = [
+        ("Stop:Train/123", RouteType::TRAIN, 123),
+        ("Stop:TRAIN/123", RouteType::TRAIN, 123),
+        ("Stop:Tram/0", RouteType::TRAM, 0),
+        ("Stop:tram/0", RouteType::TRAM, 0),
+        ("Stop:Bus/-1", RouteType::BUS, -1),
+        ("Stop:BuS/-1", RouteType::BUS, -1),
+        ("Stop:Vline/0999", RouteType::VLINE, 999),
+        ("Stop:VLine/0999", RouteType::VLINE, 999),
+        ("Stop:NightBus/000", RouteType::NIGHT_BUS, 0),
+        ("Stop:NiGhTbUs/000", RouteType::NIGHT_BUS, 0),
+    ];
+    for (s, route_type, id) in tests {
+        let id = StopId::new(id);
+        let parsed = Stop::from_str(s).expect(&format!("Failed to parse: {s}"));
+        assert_eq!(parsed, Stop { route_type, id }, "Failed to parse: {s}");
+
+        let rt_string = parsed.to_string();
+        let rt = Stop::from_str(&rt_string).expect(&format!("Failed to round trip: {s}"));
+        assert_eq!(parsed, rt, "Failed to round trip: {s}");
+    }
+}
+
+#[test]
+fn test_parsing_routes() {
+    let tests = [
+        ("Route:Train/123", RouteType::TRAIN, 123),
+        ("Route:TRAIN/123", RouteType::TRAIN, 123),
+        ("Route:Tram/0", RouteType::TRAM, 0),
+        ("Route:tram/0", RouteType::TRAM, 0),
+        ("Route:Bus/-1", RouteType::BUS, -1),
+        ("Route:BuS/-1", RouteType::BUS, -1),
+        ("Route:Vline/0999", RouteType::VLINE, 999),
+        ("Route:VLine/0999", RouteType::VLINE, 999),
+        ("Route:NightBus/000", RouteType::NIGHT_BUS, 0),
+        ("Route:NiGhTbUs/000", RouteType::NIGHT_BUS, 0),
+    ];
+    for (s, route_type, id) in tests {
+        let id = RouteId::new(id);
+        let parsed = Route::from_str(s).expect(&format!("Failed to parse: {s}"));
+        assert_eq!(parsed, Route { route_type, id }, "Failed to parse: {s}");
+
+        let rt_string = parsed.to_string();
+        let rt = Route::from_str(&rt_string).expect(&format!("Failed to round trip: {s}"));
+        assert_eq!(parsed, rt, "Failed to round trip: {s}");
+    }
 }
