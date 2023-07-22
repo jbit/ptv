@@ -1,20 +1,62 @@
-use ptv::{DeparturesParams, ResponseExpand, RouteType, Stop, StopId, PTV};
+use ptv::{DeparturesParams, ResponseExpand, SearchParams, PTV};
+use std::cmp::Reverse;
+use std::iter::zip;
 use time::OffsetDateTime;
+
+fn similar(left: &str, right: &str) -> usize {
+    let matching = zip(left.chars(), right.chars())
+        .take_while(|(l, r)| l.eq_ignore_ascii_case(r))
+        .count();
+    if matching == right.len() && matching == left.len() {
+        return usize::MAX;
+    } else {
+        matching
+    }
+}
 
 #[tokio::main(flavor = "current_thread")]
 async fn main() {
     // Get the developer ID and Key from environment variables
     let devid = std::env::var("PTV_DEVID").expect("PTV_DEVID not set");
     let key = std::env::var("PTV_KEY").expect("PTV_KEY not set");
+    let args: Vec<_> = std::env::args().collect();
+    let search = args
+        .get(1)
+        .cloned()
+        .unwrap_or_else(|| "Flinders Street Station".to_string());
 
     // Create the API client instance
     let ptv = PTV::new(devid, key.to_string(), "RustPTVExample/0.1");
 
-    // Hardcoded stop identifier for Flinders Street railway station
-    const FLINDERS: Stop = Stop {
-        route_type: RouteType::TRAIN,
-        id: StopId::new(1071),
+    let params = SearchParams {
+        include_outlets: Some(false),
+        match_stop_by_suburb: Some(false),
+        match_route_by_suburb: Some(false),
+        ..Default::default()
     };
+
+    let mut search_results = ptv
+        .search(&search, params)
+        .await
+        .expect("Failed to search for station");
+
+    search_results
+        .stops
+        .sort_by_key(|stop| Reverse(similar(&search, &stop.stop_name)));
+
+    if search_results.stops.len() > 1 {
+        println!("Multiple stops found for: {search}");
+        for stop in &search_results.stops {
+            println!("  {} {}", stop.stop(), stop.stop_name);
+        }
+    }
+
+    let stop = search_results
+        .stops
+        .first()
+        .expect("Station search returned nothing");
+
+    println!("Departures for: {} {}", stop.stop(), stop.stop_name);
 
     // Setup parameters for our departures query
     // We ask for five results per route, and extra details for related routes, runs, and vehicles
@@ -30,7 +72,7 @@ async fn main() {
 
     // Get departures from the API
     let result = ptv
-        .departures(FLINDERS, params)
+        .departures(stop.stop(), params)
         .await
         .expect("Failed to get departures");
 
@@ -62,7 +104,7 @@ async fn main() {
                 String::new()
             };
 
-            let run = &result.runs.get(&departure.run_id).unwrap();
+            let run = &result.runs.get(&departure.run_ref).unwrap();
 
             let details = if let Some(description) = run
                 .vehicle_descriptor

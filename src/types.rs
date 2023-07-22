@@ -2,60 +2,74 @@ use super::*;
 
 // Generate new-types for various Ids, allows more type safety
 macro_rules! id_type {
-    ($(#[$meta:meta])* $idname:ident) => {
+    ($(#[$meta:meta])* $idname:ident($idtype:ty)) => {
         $(#[$meta])*
         ///
         /// Swagger type: `int32`
-        #[derive(Copy, Clone, Debug, PartialOrd, Ord, PartialEq, Eq, Hash, Deserialize, Serialize)]
-        pub struct $idname(i32);
+        #[derive(Clone, Debug, PartialOrd, Ord, PartialEq, Eq, Hash, Deserialize, Serialize)]
+        pub struct $idname($idtype);
         impl $idname {
-            /// Create from a raw `i32`
-            pub const fn new(value: i32) -> Self {
+            /// Create from raw
+            pub const fn new(value: $idtype) -> Self {
                 Self(value)
             }
-            /// Convert to a raw `i32`
-            pub const fn value(self) -> i32 {
-                self.0
+            /// Convert to raw
+            pub const fn value(&self) -> &$idtype {
+                &self.0
+            }
+        }
+        impl std::fmt::Display for $idname {
+            fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+                write!(f, "{}", self.value())
             }
         }
     };
-    ($(#[$meta:meta])* $idname:ident, $(#[$helpermeta:meta])* $helpername:ident) => {
-        id_type!($(#[$meta])* $idname);
+    ($(#[$meta:meta])* $idname:ident($idtype:ty), $(#[$helpermeta:meta])* $helpername:ident  ) => {
+        id_type!($(#[$meta])* $idname($idtype));
         $(#[$helpermeta])*
-        #[derive(Copy, Clone, Debug, PartialOrd, Ord, PartialEq, Eq, Hash)]
+        #[derive(Clone, Debug, PartialOrd, Ord, PartialEq, Eq, Hash)]
         pub struct $helpername {
             pub route_type: RouteType,
             pub id: $idname,
+        }
+        impl std::fmt::Display for $helpername {
+            fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+                write!(f, "{}:{}/{}", stringify!($helpername), self.route_type, self.id)
+            }
         }
     };
 }
 id_type!(
     /** Stop Identifier */
-    StopId,
+    StopId(i32),
     /** Stop Identifier with associated transport mode */
     Stop
 );
 id_type!(
     /** Route Identifier */
-    RouteId,
+    RouteId(i32),
     /** Route Identifier with associated transport mode */
     Route
 );
 id_type!(
     /** Run Identifier */
-    RunId,
-    /** Run Identifier with associated transport mode */
+    RunId(i32)
+);
+id_type!(
+    /** Run Reference */
+    RunRef(String),
+    /** Run Reference with associated transport mode */
     Run
 );
 id_type!(
     /** Direction Identifier */
-    DirectionId,
+    DirectionId(i32),
     /** Direction Identifier with associated transport mode */
     Direction
 );
 id_type!(
     /** Disruption Identifier */
-    DisruptionId
+    DisruptionId(i32)
 );
 
 /// All route types (i.e. identifiers of transport modes) and their names.
@@ -145,7 +159,7 @@ pub struct DepartureDetails {
     /// Defaults to -1 when run identifier is Alphanumeric
     pub run_id: RunId,
     /// Alphanumeric trip/service run identifier
-    pub run_ref: String,
+    pub run_ref: RunRef,
     /// Direction of travel identifier
     pub direction_id: DirectionId,
     /// Disruption information identifier(s)
@@ -169,7 +183,7 @@ pub struct DepartureDetails {
 
 /// A train station, tram stop, bus stop, regional coach stop or Night Bus stop
 ///
-/// Swagger type: `V3.StopModel`
+/// Swagger type: `V3.StopModel` + `V3.ResultStop`
 #[derive(Clone, Debug, Deserialize)]
 pub struct StopDetails {
     /// Distance of stop from input location (in metres); returns 0 if no location is input
@@ -190,6 +204,16 @@ pub struct StopDetails {
     pub stop_landmark: String,
     /// Sequence of the stop on the route/run; return 0 when route_id or run_id not specified. Order ascendingly by this field (when non zero) to get physical order (earliest first) of stops on the route_id/run_id.
     pub stop_sequence: i32,
+    /// List of routes travelling through the stop
+    pub routes: Option<Vec<RouteDetails>>,
+}
+impl StopDetails {
+    pub fn stop(&self) -> Stop {
+        Stop {
+            route_type: self.route_type,
+            id: self.stop_id.clone(),
+        }
+    }
 }
 
 /// Descriptor of the trip/service run
@@ -272,7 +296,7 @@ pub struct RunDetails {
     /// Numeric trip/service run identifier. Defaults to -1 when run identifier is Alphanumeric
     pub run_id: RunId,
     /// Alphanumeric trip/service run identifier
-    pub run_ref: String,
+    pub run_ref: RunRef,
     /// Route identifier
     pub route_id: RouteId,
     /// Transport mode identifier
@@ -315,6 +339,19 @@ pub struct DirectionDetails {
 }
 
 /// Train lines, tram routes, bus routes, regional coach routes, Night Bus routes
+///
+/// Swagger type: `V3.RouteServiceStatus`
+#[derive(Clone, Debug, Deserialize)]
+pub struct ServiceStatusDetails {
+    /// Service status description
+    pub description: String,
+    /// Time of status
+    pub timestamp: String,
+}
+
+/// Train lines, tram routes, bus routes, regional coach routes, Night Bus routes
+///
+/// Swagger type: `V3.ResultRoute`
 #[derive(Clone, Debug, Deserialize)]
 pub struct RouteDetails {
     /// Transport mode identifier
@@ -327,6 +364,8 @@ pub struct RouteDetails {
     pub route_number: String,
     /// GTFS Identifer of the route
     pub route_gtfs_id: Option<String>,
+    /// Service status for the route (indicates disruptions)
+    pub route_service_status: Option<ServiceStatusDetails>,
 }
 
 /// Disruption information applicable to relevant routes or stops
@@ -366,3 +405,9 @@ pub struct DisruptionDetails {
     pub display_on_board: Option<bool>,
     pub display_status: Option<bool>,
 }
+
+/// TODO
+///
+/// Swagger type: `V3.ResultOutlet`
+#[derive(Clone, Debug, Deserialize)]
+pub struct OutletDetails {}

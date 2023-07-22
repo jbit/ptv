@@ -6,10 +6,15 @@ mod reqwest;
 #[cfg(test)]
 mod test;
 
-mod departures;
+mod api {
+    pub mod departures;
+    pub mod search;
+}
 mod types;
 
-pub use departures::*;
+pub use api::departures::*;
+pub use api::search::*;
+
 pub use types::*;
 
 use hmac::{Hmac, Mac};

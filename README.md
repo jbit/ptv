@@ -31,79 +31,106 @@ Supported API Operations
 - [ ] Runs_ForRouteAndRouteType
 - [ ] Runs_ForRun
 - [ ] Runs_ForRunAndRouteType
-- [ ] Search_Search
+- [X] Search_Search
 - [ ] Stops_StopDetails
 - [ ] Stops_StopsForRoute
 - [ ] Stops_StopsByGeolocation
 
 Example
 -------
-There's an example program which displays upcoming departures for [Flinders Street railway station](https://en.wikipedia.org/wiki/Flinders_Street_railway_station).
+There's an example program which displays upcoming departures for a specific station, i.e. [Flinders Street railway station](https://en.wikipedia.org/wiki/Flinders_Street_railway_station).
 
 Example of how to run:  
 (be sure to replace the PTV_DEVID and PTV_KEY environment variables with your own!)
 ```text
-PTV_DEVID=0 PTV_KEY=00000000-0000-0000-0000-000000000000 cargo run --example flinders-departures
+PTV_DEVID=0 PTV_KEY=00000000-0000-0000-0000-000000000000 cargo run --example departures 'Flinders Street Station'
 ```
 Example output:
 ```text
+Multiple stops found for: Flinders Street Station
+  Stop:Train/1071 Flinders Street Station
+  Stop:Vline/1071 Flinders Street Railway Station 
+  Stop:Tram/2722 Flinders Street Railway Station/Elizabeth St #1 
+Departures for: Stop:Train/1071 Flinders Street Station
 Route: Alamein
 Route: Belgrave
-    Platform 2  departing in 29Min to Belgrave [6 Car Xtrapolis]
-    Platform 2  departing in 89Min to Belgrave
+    Platform 2  departing in 17Min to Belgrave [6 Car Xtrapolis]
+    Platform 2  departing in 37Min to Belgrave [6 Car Xtrapolis]
+    Platform 2  departing in 57Min to Belgrave [6 Car Xtrapolis]
+    Platform 2  departing in 77Min to Belgrave [3 Car Siemens]
 Route: Craigieburn
-    Platform 4  departing in  9Min to Craigieburn [6 Car Comeng]
-    Platform 4  departing in 39Min to Craigieburn [6 Car Comeng]
-    Platform 4  departing in 69Min to Craigieburn
+    Platform 5  departing in  2Min to Craigieburn [6 Car Siemens]
+    Platform 5  departing in 22Min to Craigieburn [6 Car Comeng]
+    Platform 5  departing in 42Min to Craigieburn
+    Platform 5  departing in 62Min to Craigieburn
+    Platform 5  departing in 82Min to Craigieburn
 Route: Cranbourne
-    Platform ?? departing in 19Min to Caulfield
-    Platform 6  departing in 32Min to Cranbourne [7-car HCMT]
-    Platform 6  departing in 12Min to Cranbourne (Delayed 21Min) [7-car HCMT]
-    Platform ?? departing in 39Min to Caulfield
-    Platform 6  departing in 52Min to Cranbourne [7-car HCMT]
+    Platform ?? departing in  2Min to Caulfield
+    Platform ?? departing in 12Min to Caulfield
+    Platform ?? departing in 22Min to Caulfield
+    Platform ?? departing in 32Min to Caulfield
+    Platform ?? departing in 42Min to Caulfield
 Route: Mernda
+    Platform 1  departing in 14Min to Mernda [6 Car Xtrapolis]
+    Platform 1  departing in 34Min to Mernda
+    Platform 1  departing in 54Min to Mernda
+    Platform 1  departing in 74Min to Mernda
 Route: Frankston
-    Platform ?? departing in 19Min to Moorabbin
-    Platform ?? departing in 39Min to Moorabbin
-    Platform ?? departing in 59Min to Moorabbin
-    Platform ?? departing in 79Min to Moorabbin
+    Platform ?? departing in  2Min to Moorabbin
+    Platform ?? departing in 12Min to Moorabbin
+    Platform ?? departing in 22Min to Moorabbin
+    Platform ?? departing in 32Min to Moorabbin
+    Platform ?? departing in 42Min to Moorabbin
 Route: Glen Waverley
-    Platform 3  departing in 23Min to Glen Waverley
-    Platform 2  departing in 53Min to Glen Waverley [6 Car Xtrapolis]
-    Platform 3  departing in 83Min to Glen Waverley
+    Platform 4  departing in  4Min to Glen Waverley [6 Car Xtrapolis]
+    Platform 3  departing in 14Min to Glen Waverley
+    Platform 4  departing in 24Min to Glen Waverley [6 Car Xtrapolis]
+    Platform 3  departing in 34Min to Glen Waverley [6 Car Xtrapolis]
+    Platform 4  departing in 44Min to Glen Waverley [6 Car Xtrapolis]
 Route: Hurstbridge
-    Platform 1  departing in  6Min to Hurstbridge [6 Car Xtrapolis]
-    Platform 1  departing in 24Min to Clifton Hill (Delayed 1Min) [6 Car Xtrapolis]
-    Platform 1  departing in 28Min to Eltham
-    Platform 1  departing in 43Min to Eltham
-    Platform 1  departing in 54Min to Clifton Hill (Delayed 1Min) [6 Car Xtrapolis]
+    Platform 1  departing in  4Min to Heidelberg [6 Car Xtrapolis]
+    Platform 1  departing in 24Min to Heidelberg [6 Car Xtrapolis]
+    Platform 1  departing in 44Min to Heidelberg [6 Car Xtrapolis]
+    Platform 1  departing in 64Min to Heidelberg [6 Car Xtrapolis]
+    Platform 1  departing in 84Min to Heidelberg
 Route: Lilydale
-    Platform 3  departing in 14Min to Ringwood [6 Car Xtrapolis]
-    Platform 3  departing in 44Min to Ringwood [6 Car Xtrapolis]
-    Platform 3  departing in 59Min to Lilydale
-    Platform 2  departing in 74Min to Ringwood
+    Platform 3  departing in  0Min to Ringwood [6 Car Xtrapolis]
+    Platform 2  departing in  7Min to Lilydale [6 Car Xtrapolis]
+    Platform 3  departing in  8Min to Ringwood [6 Car Xtrapolis]
+    Platform 2  departing in 27Min to Lilydale [6 Car Xtrapolis]
+    Platform 2  departing in 47Min to Lilydale [6 Car Xtrapolis]
 Route: Pakenham
-    Platform 6  departing in  2Min to Pakenham (Delayed 6Min) [7-car HCMT]
-    Platform ?? departing in 19Min to Caulfield
-    Platform 7  departing in 22Min to Pakenham (Delayed 9Min) [7-car HCMT]
-    Platform ?? departing in 39Min to Caulfield
-    Platform 7  departing in 42Min to Pakenham [7-car HCMT]
+    Platform ?? departing in  2Min to Caulfield
+    Platform ?? departing in 12Min to Caulfield
+    Platform ?? departing in 22Min to Caulfield
+    Platform ?? departing in 32Min to Caulfield
+    Platform ?? departing in 42Min to Caulfield
 Route: Sandringham
-    Platform 13 departing in  1Min to Sandringham [6 Car Comeng]
-    Platform 13 departing in 21Min to Sandringham [6 Car Siemens]
-    Platform 13 departing in 41Min to Sandringham [6 Car Siemens]
-    Platform 13 departing in 61Min to Sandringham
-    Platform 13 departing in 81Min to Sandringham
+    Platform 13 departing in  5Min to Sandringham [6 Car Siemens]
+    Platform 12 departing in 15Min to Sandringham [6 Car Siemens]
+    Platform 13 departing in 25Min to Sandringham [6 Car Comeng]
+    Platform 12 departing in 35Min to Sandringham [6 Car Comeng]
+    Platform 13 departing in 45Min to Sandringham [6 Car Comeng]
 Route: Sunbury
+    Platform 5  departing in  7Min to Watergardens [6 Car Comeng]
+    Platform 10 departing in 13Min to Sunbury [6 Car Comeng]
+    Platform 5  departing in 27Min to Sunbury
+    Platform 5  departing in 47Min to Watergardens [6 Car Siemens]
+    Platform 5  departing in 67Min to Sunbury
 Route: Upfield
-    Platform 5  departing in  5Min to Upfield [6 Car Comeng]
-    Platform 5  departing in 35Min to Upfield [6 Car Comeng]
-    Platform 5  departing in 65Min to Upfield [6 Car Comeng]
+    Platform 5  departing in 17Min to Upfield [6 Car Comeng]
+    Platform 5  departing in 37Min to Upfield [6 Car Siemens]
+    Platform 5  departing in 57Min to Upfield
+    Platform 5  departing in 77Min to Upfield
 Route: Werribee
-    Platform 9  departing in 12Min to Werribee [6 Car Comeng]
-    Platform 8  departing in 32Min to Werribee
-    Platform 8  departing in 52Min to Werribee [6 Car Comeng]
-    Platform 8  departing in 72Min to Werribee
+    Platform 8  departing in 11Min to Werribee [6 Car Comeng]
+    Platform 8  departing in 31Min to Werribee [6 Car Comeng]
+    Platform 8  departing in 51Min to Werribee [6 Car Siemens]
+    Platform 8  departing in 71Min to Werribee [6 Car Comeng]
 Route: Williamstown
-Route: Showgrounds - Flemington Racecourse
+    Platform 9  departing in  1Min to Williamstown [6 Car Comeng]
+    Platform 9  departing in 21Min to Williamstown [6 Car Comeng]
+    Platform 9  departing in 41Min to Williamstown [6 Car Comeng]
+    Platform 9  departing in 61Min to Williamstown
+    Platform 9  departing in 81Min to Williamstown
 ```

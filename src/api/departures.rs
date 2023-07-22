@@ -1,4 +1,4 @@
-use super::*;
+use crate::*;
 
 /// Response from [PTV::departures]
 ///
@@ -8,11 +8,11 @@ pub struct DeparturesResponse {
     /// Timetabled and real-time service departures
     pub departures: Vec<DepartureDetails>,
     /// A train station, tram stop, bus stop, regional coach stop or Night Bus stop
-    pub stops: BTreeMap<i32, StopDetails>,
+    pub stops: BTreeMap<StopId, StopDetails>,
     /// Train lines, tram routes, bus routes, regional coach routes, Night Bus routes
     pub routes: BTreeMap<RouteId, RouteDetails>,
     /// Individual trips/services of a route
-    pub runs: BTreeMap<RunId, RunDetails>,
+    pub runs: BTreeMap<RunRef, RunDetails>,
     /// Directions of travel of route
     pub directions: BTreeMap<DirectionId, DirectionDetails>,
     /// Disruption information applicable to relevant routes or stops
