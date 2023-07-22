@@ -16,7 +16,7 @@ pub struct SearchResponse {
     pub status: Status,
 }
 
-/// Parameters for [PTV::departures]
+/// Parameters for [PTV::search]
 #[derive(Clone, Debug, Default, Serialize)]
 pub struct SearchParams {
     /// Filter by route_type; values returned via RouteTypes API (note: stops and routes are ordered by route_types specified)

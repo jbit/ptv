@@ -401,6 +401,52 @@ pub struct RouteDetails {
     pub route_service_status: Option<ServiceStatusDetails>,
 }
 
+/// Route relevant to a disruption (if applicable)
+///
+/// Swagger type: `V3.DisruptionRoute`
+#[derive(Clone, Debug, Deserialize)]
+pub struct DisruptionRoute {
+    /// Transport mode identifier
+    pub route_type: RouteType,
+    /// Route identifier
+    pub route_id: RouteId,
+    /// Name of route
+    pub route_name: String,
+    /// Route number presented to public (i.e. not route_id)
+    pub route_number: String,
+    /// GTFS Identifer of the route
+    pub route_gtfs_id: Option<String>,
+    /// Direction of travel relevant to a disruption (if applicable)
+    pub route_service_status: Option<DisruptionDirection>,
+}
+
+/// Direction of travel relevant to a disruption
+///
+/// Swagger type: `V3.DisruptionDirection`
+#[derive(Clone, Debug, Deserialize)]
+pub struct DisruptionDirection {
+    /// Route and direction of travel combination identifier
+    pub route_direction_id: i32,
+    /// Direction of travel identifier
+    pub direction_id: DirectionId,
+    /// Name of direction of travel
+    pub direction_name: String,
+    /// Time of service to which disruption applies, in 24 hour clock format (HH:MM:SS) AEDT/AEST;
+    /// returns null if disruption applies to multiple (or no) services
+    pub service_time: String,
+}
+
+///  Stop relevant to a disruption (if applicable)
+///
+/// Swagger type: `V3.DisruptionStop`
+#[derive(Clone, Debug, Deserialize)]
+pub struct DisruptionStop {
+    /// Stop identifier
+    pub stop_id: StopId,
+    /// Name of stop
+    pub stop_name: String,
+}
+
 /// Disruption information applicable to relevant routes or stops
 ///
 /// Swagger type: `V3.Disruption`
@@ -431,9 +477,9 @@ pub struct DisruptionDetails {
     #[serde(rename = "to_date", skip_serializing_if = "Option::is_none")]
     pub to_date: Option<String>,
     /// Route relevant to a disruption (if applicable)
-    //    pub routes: Option<Vec<crate::models::V3PeriodDisruptionRoute>>,
+    pub routes: Option<Vec<DisruptionRoute>>,
     /// Stop relevant to a disruption (if applicable)
-    //    pub stops: Option<Vec<crate::models::V3PeriodDisruptionStop>>,
+    pub stops: Option<Vec<DisruptionStop>>,
     pub colour: Option<String>,
     pub display_on_board: Option<bool>,
     pub display_status: Option<bool>,
